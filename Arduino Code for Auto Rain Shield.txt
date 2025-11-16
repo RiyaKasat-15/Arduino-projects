@@ -1,0 +1,129 @@
+Arduino Code for Auto Rain Shield
+
+#include <Servo.h>
+
+#define RAIN_SENSOR A0  // Rain sensor connected to analog pin A0
+#define THRESHOLD 500   // Adjust threshold based on sensor calibration
+#define BUZZER 7        // Optional buzzer on pin 7
+Servo shieldServo;      // Servo motor object
+
+void setup() {
+    Serial.begin(9600);
+    pinMode(RAIN_SENSOR, INPUT);
+    pinMode(BUZZER, OUTPUT);
+    shieldServo.attach(9);  // Servo connected to pin 9
+    shieldServo.write(0);   // Initial position (retracted)
+    digitalWrite(BUZZER, LOW);
+}
+
+void loop() {
+    int rainValue = analogRead(RAIN_SENSOR); // Read rain sensor value
+    Serial.print("Rain Sensor Value: ");
+    Serial.println(rainValue);
+
+    if (rainValue < THRESHOLD) {  
+        // If rain is detected (lower value means more water detected)
+        Serial.println("Rain detected! Closing shield.");
+        shieldServo.write(90);  // Move shield over clothes
+        digitalWrite(BUZZER, HIGH); // Sound alarm
+        delay(500);
+        digitalWrite(BUZZER, LOW);
+    } else {
+        // No rain, retract shield
+        Serial.println("No rain. Shield retracted.");
+        shieldServo.write(0);
+    }
+
+    delay(2000); // Delay for stability
+}
+
+
+
+
+ Working:
+
+1. The rain sensor detects rain and gives an analog value.
+
+
+2. If rain is detected (value < THRESHOLD), the servo motor moves to cover the clothes.
+
+
+3. If there's no rain, the shield retracts.
+
+
+4. The buzzer alerts when rain starts.
+
+
+
+Customizations:
+
+Adjust the THRESHOLD value based on sensor readings in a dry and wet state.
+
+Change the servo angles (0 to 180°) based on your shield mechanism.
+
+Add an LCD display or LED indicators for better visibility.
+
+OR
+
+
+Steps to Test & Debug:
+
+1. Check Rain Sensor Values
+
+Upload this simple code first:
+
+
+void setup() {
+    Serial.begin(9600);
+    pinMode(A0, INPUT);
+}
+void loop() {
+    int rainValue = analogRead(A0);
+    Serial.println(rainValue);
+    delay(1000);
+}
+
+Open Serial Monitor (9600 baud) and check dry vs. wet values.
+
+Adjust THRESHOLD in the main code accordingly.
+
+
+
+2. Servo Testing
+
+Manually test your servo positions using:
+
+
+#include <Servo.h>
+Servo testServo;
+void setup() {
+    testServo.attach(9);
+}
+void loop() {
+    testServo.write(0);  // Retracted position
+    delay(2000);
+    testServo.write(90); // Shield covering position
+    delay(2000);
+}
+
+If needed, change 0 and 90 to suit your mechanical setup.
+
+
+
+3. Final Integration
+
+Once sensor + servo tests work separately, run the full code.
+
+If servo moves too fast/slow, use delay(1000); between moves.
+
+If false detections happen, tweak sensor position or use a filter capacitor (100nF) on A0.
+
+
+
+
+Possible Issues & Fixes:
+✅ Servo not moving? → Check if powered properly (5V, GND, PWM pin).
+✅ False rain detection? → Shield the sensor from mist/wind, fine-tune THRESHOLD.
+✅ Servo jittering? → Use servo.detach() when idle to stop unnecessary movement.
+
+
